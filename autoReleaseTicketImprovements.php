@@ -23,22 +23,23 @@ add_hook('TicketOpenAdmin', 1, function($vars) {
 	
     // Only proceed if there's a subject match
     if ($subject != SUBJECT){
-        return;
+        return true;
     }
 
     function log_error($msg){
         logActivity('[Hook autoReleaseTicketImprovements] Error: ' . $msg);
-        return;
     }
 	
     $found = preg_match(BODY_REGEX, $message, $match);
 
     if (!$found || $match == null){
-        return log_error('preg_match did not result in required number of matches');
+        log_error('preg_match did not result in required number of matches');
+        return true;
     }
 
     if (count($match) != 3){ //$match[0] is always the complete string, then follows specific capture groups
-        return log_error('preg_match did not result in required number of matches');
+        log_error('preg_match did not result in required number of matches');
+        return true;
     }
 
     $type = $match[1];
@@ -46,7 +47,8 @@ add_hook('TicketOpenAdmin', 1, function($vars) {
         
 
     if ($relid === 0){
-        return log_error('ID not found in message body');
+        log_error('ID not found in message body');
+        return true;
     }
 
     if ($type == "Addon"){
@@ -68,26 +70,22 @@ add_hook('TicketOpenAdmin', 1, function($vars) {
         $servicename = $service->name . "(" . $service->domain . ")";
     }
     else{
-        return log_error('Incorrect type found');
+        log_error('Incorrect type found');
+        return true;
     }
-
-    $subject = "Setup of $servicename";
-    $newmessage = "This ticket has been created to track the setup of new service: $servicename.\n\n$message";
 
     $postData = array(
         'ticketid'  => $ticketid,
-        'subject'   => $subject,
-        'message'   => $newmessage
+        'subject'   => "Setup of $servicename",
+        'message'   => "This ticket has been created to track the setup of new service: $servicename.\n\n$message",
     );
 
-    if (count($postData) > 1){
-        // Update the actual ticket data.
-        $results = localAPI('UpdateTicket', $postData);
-        if ($results['result'] !== 'success'){
-            return log_error('Failure to update ticket data');
-        }
+    // Update the actual ticket data.
+    $results = localAPI('UpdateTicket', $postData);
+    if ($results['result'] !== 'success'){
+        log_error('Failure to update ticket data');
     }
-
+    
     return true;
 
 });
