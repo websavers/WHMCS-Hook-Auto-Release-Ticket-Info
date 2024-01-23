@@ -10,8 +10,8 @@ define('SUBJECT', 'Service Provisioned');
 // Regular expression to search for
 define('BODY_REGEX', '/(Service|Addon) ID # (\d+) was just auto provisioned/');
 
-// https://developers.whmcs.com/hooks-reference/ticket/#ticketopenadmin
-add_hook('TicketOpenAdmin', 1, function($vars) {
+// https://developers.whmcs.com/hooks-reference/ticket/#ticketopen
+add_hook('TicketOpen', 1, function($vars) {
 
     //logActivity('[Hook autoReleaseTicketImprovements] Ticket Opened');
 
